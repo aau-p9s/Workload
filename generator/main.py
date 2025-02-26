@@ -9,8 +9,13 @@ from locust.stats import stats_printer, stats_history
 from locust.log import setup_logging
 from locust.runners import MasterRunner, LocalRunner
 import gevent
+import argparse
 
 from generator import UserBehavior
+
+parser = argparse.ArgumentParser(sys.argv[0])
+parser.add_argument("--addr", "-a", default="0.0.0.0", type=str)
+parser.add_argument("--port", "-p", default=8000, type=int)
 
 setup_logging("INFO", None)
 logger = logging.getLogger(__name__)
@@ -60,10 +65,11 @@ def adjust_users(environment):
         
         gevent.sleep(10)
 
-def main():
+def main(addr, port):
     web_host = os.environ.get("WEB_HOST", "0.0.0.0")
     web_port = int(os.environ.get("WEB_PORT", 8089))
-    target_host = os.environ.get("TARGET_HOST", "http://localhost:8000")
+
+    target_host = str(addr) + ":" + str(port)
     
     env = Environment(user_classes=[UserBehavior])
     
@@ -99,6 +105,10 @@ def main():
     
     gevent.joinall([web_ui.greenlet, adjust_users_greenlet, stats_greenlet])
 
+args = vars(parser.parse_args(sys.argv[1:]))
+addr = args["addr"]
+port = args["port"]
+
 if __name__ == "__main__":
     print("=" * 70)
     print(" Locust Day-Night Traffic Test")
@@ -106,7 +116,7 @@ if __name__ == "__main__":
     print("=" * 70)
     
     try:
-        main()
+        main(addr, port)
     except KeyboardInterrupt:
         logger.info("Shutting down...")
         sys.exit(0)
