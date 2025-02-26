@@ -28,8 +28,8 @@ class UserBehavior(HttpUser):
     
     @task(1)
     def matmul_test(self):
-        x = [[random.randint(1, 10) for _ in range(3)] for _ in range(3)]
-        y = [[random.randint(1, 10) for _ in range(3)] for _ in range(3)]
+        x = random.randint(1, 10)
+        y = random.randint(1, 10)
         payload = {"x": x, "y": y}
         
         with self.client.post("/mm", json=payload, catch_response=True) as response:
