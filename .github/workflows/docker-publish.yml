@@ -40,18 +40,18 @@ jobs:
       - name : Build and push Docker latest image
         uses: docker/build-push-action@v3
         with:
-          context: {{ matrix.image }}
+          context: "${{ matrix.image }}"
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-{{ matrix.image }}:latest
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-${{ matrix.image }}:latest
           platforms:
             linux/amd64
 
       - name: Build and push Docker image
         uses: docker/build-push-action@v3
         with:
-          context: {{ matrix.image }}
+          context: "${{ matrix.image }}"
           push: true
-          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-{{ matrix.image }}:${{ env.sha }}
+          tags: ${{ env.REGISTRY }}/${{ env.IMAGE_NAME }}-${{ matrix.image }}:${{ env.sha }}
           platforms: 
             linux/amd64
 
