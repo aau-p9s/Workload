@@ -13,10 +13,6 @@ import argparse
 
 from generator import UserBehavior
 
-parser = argparse.ArgumentParser(sys.argv[0])
-parser.add_argument("--addr", "-a", default="0.0.0.0", type=str)
-parser.add_argument("--port", "-p", default=8000, type=int)
-
 setup_logging("INFO", None)
 logger = logging.getLogger(__name__)
 
@@ -69,7 +65,7 @@ def main(addr, port):
     web_host = os.environ.get("WEB_HOST", "0.0.0.0")
     web_port = int(os.environ.get("WEB_PORT", 8089))
 
-    target_host = str(addr) + ":" + str(port)
+    target_host = f"http://{addr}:{port}"
     
     env = Environment(user_classes=[UserBehavior])
     
@@ -105,16 +101,23 @@ def main(addr, port):
     
     gevent.joinall([web_ui.greenlet, adjust_users_greenlet, stats_greenlet])
 
-args = vars(parser.parse_args(sys.argv[1:]))
-addr = args["addr"]
-port = args["port"]
-
 if __name__ == "__main__":
     print("=" * 70)
     print(" Locust Day-Night Traffic Test")
     print(" Press Ctrl+C to stop the test")
     print("=" * 70)
+
+    parser = argparse.ArgumentParser(sys.argv[0])
+    parser.add_argument("--addr", "-a", default="0.0.0.0", type=str)
+    parser.add_argument("--port", "-p", default=8000, type=int)
     
+    args = vars(parser.parse_args(sys.argv[1:]))
+    print(args)
+    addr = args["addr"]
+    port = args["port"]
+    # small hack to avoid locust dying due to argparse
+    sys.argv = sys.argv[:1]
+   
     try:
         main(addr, port)
     except KeyboardInterrupt:
