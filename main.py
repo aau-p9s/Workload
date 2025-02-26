@@ -1,19 +1,20 @@
 #!/usr/bin/env python
 import argparse
+from http.server import HTTPServer
 import sys
 
-from lib.tasks.mm import mm
-
+from lib.api import Server
 parser = argparse.ArgumentParser(sys.argv[0])
-parser.add_argument("--size1", "-1", default="1000x1000")
-parser.add_argument("--size2", "-2", default="1000x1000")
+parser.add_argument("--addr", "-a", default="localhost", type=str)
+parser.add_argument("--port", "-p", default=8000, type=int)
 
 args = vars(parser.parse_args(sys.argv[1:]))
-
-size1 = [int(n) for n in args["size1"].split("x")]
-size2 = [int(n) for n in args["size2"].split("x")]
+addr = args["addr"]
+port = args["port"]
 
 if __name__ == "__main__":
-    task = mm()
-    while True:
-        task.run((size1, size2))
+    try:
+        http = HTTPServer((addr, port), Server)
+        http.serve_forever()
+    except KeyboardInterrupt:
+        print("\nexiting...")
