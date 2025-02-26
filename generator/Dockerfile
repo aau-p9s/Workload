@@ -3,7 +3,6 @@ FROM python:3.11-slim
 WORKDIR /app
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    gcc \
     libc-dev \
     curl \
     netcat-traditional \
@@ -17,7 +16,6 @@ COPY generator.py /app/
 
 EXPOSE 8089
 
-ENV TARGET_HOST=http://localhost:8000
 ENV WEB_PORT=8089
 ENV WEB_HOST=0.0.0.0
 ENV PYTHONUNBUFFERED=1

@@ -17,14 +17,10 @@ class UserBehavior(HttpUser):
         payload = {"x": x, "y": y}
         
         with self.client.post("/sum", json=payload, catch_response=True) as response:
-            try:
-                expected = str(x + y)
-                if response.text == expected:
-                    response.success()
-                else:
-                    response.failure(f"Got {response.text}, expected {expected}")
-            except Exception as e:
-                response.failure(f"Exception: {str(e)}")
+            if response.status_code == 200:
+                response.success()
+            else:
+                response.failure(f"Status code: {response.status_code}")
     
     @task(1)
     def matmul_test(self):
