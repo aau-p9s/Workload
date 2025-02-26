@@ -5,7 +5,7 @@ import sys
 
 from lib.api import Server
 parser = argparse.ArgumentParser(sys.argv[0])
-parser.add_argument("--addr", "-a", default="localhost", type=str)
+parser.add_argument("--addr", "-a", default="0.0.0.0", type=str)
 parser.add_argument("--port", "-p", default=8000, type=int)
 
 args = vars(parser.parse_args(sys.argv[1:]))
