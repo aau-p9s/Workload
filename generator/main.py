@@ -15,17 +15,6 @@ from generator import UserBehavior
 setup_logging("INFO", None)
 logger = logging.getLogger(__name__)
 
-def get_local_ip():
-    try:
-        import socket
-        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        s.connect(("8.8.8.8", 80))
-        local_ip = s.getsockname()[0]
-        s.close()
-        return local_ip
-    except Exception:
-        return None
-
 def time_based_load_shape():
     current_hour = datetime.now().hour
     current_minute = datetime.now().minute
@@ -83,12 +72,9 @@ def main():
     
     web_ui = env.create_web_ui(host=web_host, port=web_port)
     
-    local_ip = get_local_ip()
     
     print(f"\nLocust Web UI available at:")
     print(f" * Local:    http://localhost:{web_port}")
-    if local_ip:
-        print(f" * Network:  http://{local_ip}:{web_port}")
     print(f"\nTarget host: {target_host}")
     print("\n")
     
