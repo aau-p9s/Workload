@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 import argparse
-from http.server import HTTPServer
+from http.server import ThreadingHTTPServer
 import sys
 
 from lib.api import Server
@@ -14,7 +14,7 @@ port = args["port"]
 
 if __name__ == "__main__":
     try:
-        http = HTTPServer((addr, port), Server)
+        http = ThreadingHTTPServer((addr, port), Server)
         http.serve_forever()
     except KeyboardInterrupt:
         print("\nexiting...")
