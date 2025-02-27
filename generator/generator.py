@@ -4,6 +4,8 @@ from datetime import datetime
 import json
 from locust import HttpUser, task, between, events
 
+from args import size
+
 class UserBehavior(HttpUser):
     wait_time = between(1, 3)
     
@@ -12,9 +14,7 @@ class UserBehavior(HttpUser):
         
     @task(2)
     def sum_test(self):
-        x = random.randint(1, 100)
-        y = random.randint(1, 100)
-        payload = {"x": x, "y": y}
+        payload = {"x": size[0], "y": size[1]}
         
         with self.client.post("/sum", json=payload, catch_response=True) as response:
             if response.status_code == 200:
@@ -24,9 +24,7 @@ class UserBehavior(HttpUser):
     
     @task(1)
     def matmul_test(self):
-        x = random.randint(1, 10)
-        y = random.randint(1, 10)
-        payload = {"x": x, "y": y}
+        payload = {"x": size[0], "y": size[1]}
         
         with self.client.post("/mm", json=payload, catch_response=True) as response:
             if response.status_code == 200:

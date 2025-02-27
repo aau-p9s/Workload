@@ -11,8 +11,7 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 COPY ./requirements.txt /app/
 RUN pip install -r requirements.txt
 
-COPY main.py /app/
-COPY generator.py /app/
+COPY *.py /app/
 
 EXPOSE 8089
 

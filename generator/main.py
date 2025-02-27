@@ -9,7 +9,7 @@ from locust.stats import stats_printer, stats_history
 from locust.log import setup_logging
 from locust.runners import MasterRunner, LocalRunner
 import gevent
-import argparse
+from args import addr, port, base, peak
 
 from generator import UserBehavior
 
@@ -23,7 +23,6 @@ def time_based_load_shape():
     decimal_hour = current_hour + (current_minute / 60)
     
     peak_hour = 16.0
-    trough_hour = 3.0
     
     distance_from_peak = min(
         abs(decimal_hour - peak_hour),
@@ -35,15 +34,14 @@ def time_based_load_shape():
     
     multiplier = 1.0 - (0.9 * normalized_distance)
     
-    base_users = 50
-    max_additional_users = 2000
+    base_users = base
+    max_additional_users = peak
     
     target_users = base_users + int(max_additional_users * multiplier)
     
     return target_users
 
 def adjust_users(environment):
-    start_time = time.time()
     
     while True:
         target_users = time_based_load_shape()
@@ -61,7 +59,7 @@ def adjust_users(environment):
         
         gevent.sleep(10)
 
-def main(addr, port):
+def main(addr:str, port:int) -> None:
     web_host = os.environ.get("WEB_HOST", "0.0.0.0")
     web_port = int(os.environ.get("WEB_PORT", 8089))
 
@@ -107,17 +105,6 @@ if __name__ == "__main__":
     print(" Press Ctrl+C to stop the test")
     print("=" * 70)
 
-    parser = argparse.ArgumentParser(sys.argv[0])
-    parser.add_argument("--addr", "-a", default="0.0.0.0", type=str)
-    parser.add_argument("--port", "-p", default=8000, type=int)
-    
-    args = vars(parser.parse_args(sys.argv[1:]))
-    print(args)
-    addr = args["addr"]
-    port = args["port"]
-    # small hack to avoid locust dying due to argparse
-    sys.argv = sys.argv[:1]
-   
     try:
         main(addr, port)
     except KeyboardInterrupt:
