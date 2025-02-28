@@ -1,10 +1,7 @@
-import time
-import random
-from datetime import datetime
-import json
-from locust import HttpUser, task, between, events
+from locust import HttpUser, task, between
+from locust.clients import ResponseContextManager
 
-from args import size
+from lib.args import size
 
 class UserBehavior(HttpUser):
     wait_time = between(1, 3)
@@ -14,28 +11,34 @@ class UserBehavior(HttpUser):
         
     @task(2)
     def sum_test(self):
-        payload = {"x": size[0], "y": size[1]}
+        payload:dict[str, int] = {"x": size[0], "y": size[1]}
         
         with self.client.post("/sum", json=payload, catch_response=True) as response:
             if response.status_code == 200:
-                response.success()
+                if isinstance(response, ResponseContextManager):
+                    response.success()
             else:
-                response.failure(f"Status code: {response.status_code}")
+                if isinstance(response, ResponseContextManager):
+                    response.failure(f"Status code: {response.status_code}")
     
     @task(1)
     def matmul_test(self):
-        payload = {"x": size[0], "y": size[1]}
+        payload:dict[str, int] = {"x": size[0], "y": size[1]}
         
         with self.client.post("/mm", json=payload, catch_response=True) as response:
             if response.status_code == 200:
-                response.success()
+                if isinstance(response, ResponseContextManager):
+                    response.success()
             else:
-                response.failure(f"Status code: {response.status_code}")
+                if isinstance(response, ResponseContextManager):
+                    response.failure(f"Status code: {response.status_code}")
     
     @task(3)
     def home_test(self):
         with self.client.get("/", catch_response=True) as response:
             if response.text == "got request...":
-                response.success()
+                if isinstance(response, ResponseContextManager):
+                    response.success()
             else:
-                response.failure(f"Unexpected response: {response.text}")
+                if isinstance(response, ResponseContextManager):
+                    response.failure(f"Unexpected response: {response.text}")
