@@ -33,7 +33,8 @@ class Server(BaseHTTPRequestHandler):
     def matmul(self):
         # request has to be a POST request, so the parameters should be in the body...
         data:dict[str, Any] = self.getData()
-        x, y = data["x"], data["y"]
+        x:int = data["x"]
+        y:int = data["y"]
         task = mm(((x, y), (y,x)))
         print(f"running mm with {x=} and {y=}")
         task.run()
