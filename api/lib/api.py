@@ -1,6 +1,8 @@
-from http.server import HTTPServer, BaseHTTPRequestHandler
-from typing import Callable
+from http.server import BaseHTTPRequestHandler
+from typing import Any, Callable
 from json import loads
+
+from lib.tasks.task import Task
 
 from .tasks.sum import sumTask
 
@@ -18,8 +20,8 @@ class Server(BaseHTTPRequestHandler):
         super().__init__(request, client_address, server)
 
         
-    def getData(self):
-        dataSize = int(self.headers.get("Content-Length", 0))
+    def getData(self) -> dict[str, Any]:
+        dataSize:int = int(self.headers.get("Content-Length", 0))
         return loads(self.rfile.read(dataSize).decode())
 
     def ok(self, message:str):
@@ -30,7 +32,7 @@ class Server(BaseHTTPRequestHandler):
 
     def matmul(self):
         # request has to be a POST request, so the parameters should be in the body...
-        data = self.getData()
+        data:dict[str, Any] = self.getData()
         x, y = data["x"], data["y"]
         task = mm(((x, y), (y,x)))
         print(f"running mm with {x=} and {y=}")
@@ -40,10 +42,10 @@ class Server(BaseHTTPRequestHandler):
 
     def sum(self):
         data = self.getData()
-        x, y = data["x"], data["y"]
-        task = sumTask((x, y))
+        size:tuple[int, int] = (data["x"], data["y"])
+        task:Task = sumTask(size)
         print("calculating sum...")
-        res = task.run()
+        res:Any = task.run()
         self.ok(f"{res}")
 
     def do_GET(self):
@@ -57,9 +59,3 @@ class Server(BaseHTTPRequestHandler):
                 handler(self)
 
 
-
-
-if __name__ == "__main__":
-    http = HTTPServer(("localhost", 8000), Server)
-    http.serve_forever()
-    

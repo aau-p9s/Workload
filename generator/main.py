@@ -1,6 +1,8 @@
 import sys
 import logging
-from datetime import datetime
+from datetime import date, datetime
+
+from locust.web import WebUI
 from lib.get_shape import time_based_load_shape
 from locust.env import Environment
 from locust.log import setup_logging
@@ -37,12 +39,12 @@ def adjust_users(environment:Environment) -> None:
 def main(addr:str, port:int) -> None:
     target_host:str = f"http://{addr}:{port}"
     
-    env = Environment(user_classes=[UserBehavior])
+    env:Environment = Environment(user_classes=[UserBehavior])
     
     env.host = target_host
     env.runner = LocalRunner(env)
     
-    web_ui = env.create_web_ui(host=web_addr, port=web_port)
+    web_ui:WebUI = env.create_web_ui(host=web_addr, port=web_port)
     
     
     print(f"\nLocust Web UI available at:")
@@ -53,15 +55,15 @@ def main(addr:str, port:int) -> None:
     env.runner.start(1, spawn_rate=1)
     logger.info(f"Load test started with 1 user against {target_host}")
     
-    adjust_users_greenlet = gevent.spawn(adjust_users, env)
+    adjust_users_greenlet:gevent.Greenlet = gevent.spawn(adjust_users, env)
     
     def stats_printer():
         while True:
             if env.runner is None:
                 continue
-            current_time = datetime.now().strftime("%H:%M:%S")
-            current_users = env.runner.user_count
-            target_users = time_based_load_shape()
+            current_time:str = datetime.now().strftime("%H:%M:%S")
+            current_users:int = env.runner.user_count
+            target_users:int = time_based_load_shape()
             
             logger.info(f"[{current_time}] Active users: {current_users}, Target: {target_users}")
             logger.info(f"Requests: {env.runner.stats.total.num_requests}, " 
@@ -69,7 +71,7 @@ def main(addr:str, port:int) -> None:
             
             gevent.sleep(60)
     
-    stats_greenlet = gevent.spawn(stats_printer)
+    stats_greenlet:gevent.Greenlet = gevent.spawn(stats_printer)
     
     if web_ui.greenlet is not None:
         gevent.joinall([web_ui.greenlet, adjust_users_greenlet, stats_greenlet])

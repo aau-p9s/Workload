@@ -11,7 +11,7 @@ class UserBehavior(HttpUser):
         
     @task(2)
     def sum_test(self):
-        payload = {"x": size[0], "y": size[1]}
+        payload:dict[str, int] = {"x": size[0], "y": size[1]}
         
         with self.client.post("/sum", json=payload, catch_response=True) as response:
             if response.status_code == 200:
@@ -23,7 +23,7 @@ class UserBehavior(HttpUser):
     
     @task(1)
     def matmul_test(self):
-        payload = {"x": size[0], "y": size[1]}
+        payload:dict[str, int] = {"x": size[0], "y": size[1]}
         
         with self.client.post("/mm", json=payload, catch_response=True) as response:
             if response.status_code == 200:
