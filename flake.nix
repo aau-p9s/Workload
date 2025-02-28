@@ -10,6 +10,7 @@
             packages = with pkgs; [
                 (python312.withPackages (py: with py; [
                     numpy
+                    ipython
                 ]))
             ];
         };

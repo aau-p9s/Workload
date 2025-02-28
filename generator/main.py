@@ -1,76 +1,48 @@
-import os
 import sys
-import time
 import logging
 from datetime import datetime
-from locust import HttpUser, task, between, events
+from lib.get_shape import time_based_load_shape
 from locust.env import Environment
-from locust.stats import stats_printer, stats_history
 from locust.log import setup_logging
-from locust.runners import MasterRunner, LocalRunner
+from locust.runners import LocalRunner
 import gevent
-from args import addr, port, base, peak
+from lib.args import addr, port, web_port, web_addr
 
 from generator import UserBehavior
 
 setup_logging("INFO", None)
-logger = logging.getLogger(__name__)
+logger:logging.Logger = logging.getLogger(__name__)
 
-def time_based_load_shape():
-    current_hour = datetime.now().hour
-    current_minute = datetime.now().minute
-    
-    decimal_hour = current_hour + (current_minute / 60)
-    
-    peak_hour = 16.0
-    
-    distance_from_peak = min(
-        abs(decimal_hour - peak_hour),
-        24 - abs(decimal_hour - peak_hour)
-    )
-    
-    max_distance = 13.0
-    normalized_distance = min(distance_from_peak / max_distance, 1.0)
-    
-    multiplier = 1.0 - (0.9 * normalized_distance)
-    
-    base_users = base
-    max_additional_users = peak
-    
-    target_users = base_users + int(max_additional_users * multiplier)
-    
-    return target_users
 
-def adjust_users(environment):
-    
+def adjust_users(environment:Environment) -> None:
+    if environment.runner is None:
+        exit(1)
     while True:
-        target_users = time_based_load_shape()
+        target_users:int = time_based_load_shape()
         
-        current_users = environment.runner.user_count
+        current_users:int = environment.runner.user_count
+        print(f"{target_users=} {current_users=}")
         
         if current_users < target_users:
-            spawn_count = target_users - current_users
+            spawn_count:int = target_users - current_users
             logger.info(f"Spawning {spawn_count} users to reach target of {target_users}")
             environment.runner.spawn_users({UserBehavior.__name__: spawn_count})
         elif current_users > target_users:
-            stop_count = min(current_users - target_users, 5)
+            stop_count:int = min(current_users - target_users, 5)
             logger.info(f"Stopping {stop_count} users to reach target of {target_users}")
-            environment.runner.stop_users(stop_count)
+            environment.runner.stop_users({UserBehavior.__name__:stop_count})
         
         gevent.sleep(10)
 
 def main(addr:str, port:int) -> None:
-    web_host = os.environ.get("WEB_HOST", "0.0.0.0")
-    web_port = int(os.environ.get("WEB_PORT", 8089))
-
-    target_host = f"http://{addr}:{port}"
+    target_host:str = f"http://{addr}:{port}"
     
     env = Environment(user_classes=[UserBehavior])
     
     env.host = target_host
     env.runner = LocalRunner(env)
     
-    web_ui = env.create_web_ui(host=web_host, port=web_port)
+    web_ui = env.create_web_ui(host=web_addr, port=web_port)
     
     
     print(f"\nLocust Web UI available at:")
@@ -85,6 +57,8 @@ def main(addr:str, port:int) -> None:
     
     def stats_printer():
         while True:
+            if env.runner is None:
+                continue
             current_time = datetime.now().strftime("%H:%M:%S")
             current_users = env.runner.user_count
             target_users = time_based_load_shape()
@@ -97,7 +71,8 @@ def main(addr:str, port:int) -> None:
     
     stats_greenlet = gevent.spawn(stats_printer)
     
-    gevent.joinall([web_ui.greenlet, adjust_users_greenlet, stats_greenlet])
+    if web_ui.greenlet is not None:
+        gevent.joinall([web_ui.greenlet, adjust_users_greenlet, stats_greenlet])
 
 if __name__ == "__main__":
     print("=" * 70)
