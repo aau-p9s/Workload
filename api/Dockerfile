@@ -3,10 +3,10 @@ FROM python:3.12-slim
 WORKDIR /workload
 
 COPY ./main.py ./requirements.txt .
+RUN pip install -r requirements.txt
+
 COPY ./lib/*.py ./lib/
 COPY ./lib/tasks/*.py ./lib/tasks/
 
-
-RUN pip install -r requirements.txt
 
 ENTRYPOINT ["python", "main.py"]
