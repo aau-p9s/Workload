@@ -3,8 +3,8 @@ services:
     image: ghcr.io/aau-p9s/workload-api:latest
     hostname: workload-api
     environment:
-      WORKLOAD.ADDR: 0.0.0.0
-      WORKLOAD.PORT: 8123
+      WORKLOAD_ADDR: 0.0.0.0
+      WORKLOAD_PORT: 8123
 
     ports:
       - 8123:8123
@@ -12,9 +12,9 @@ services:
   generator:
     image: ghcr.io/aau-p9s/workload-generator:latest
     environment:
-      GENERATOR.API.ADDR: workload-api
-      GENERATOR.API.PORT: 8123
-      GENERATOR.PORT: 8124
+      GENERATOR_API_ADDR: workload-api
+      GENERATOR_API_PORT: 8123
+      GENERATOR_PORT: 8124
 
     ports:
       - 8124:8124
