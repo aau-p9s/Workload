@@ -2,12 +2,15 @@
 import argparse
 from http.server import HTTPServer, ThreadingHTTPServer
 import sys
+import os
 from typing import Any
+
+getEnv = lambda arg, dtype, default: dtype(os.environ[arg]) if arg in os.environ else default
 
 from lib.api import Server
 parser:argparse.ArgumentParser = argparse.ArgumentParser(sys.argv[0])
-parser.add_argument("--addr", "-a", default="0.0.0.0", type=str)
-parser.add_argument("--port", "-p", default=8000, type=int)
+parser.add_argument("--addr", "-a", default=getEnv("WORKLOAD_ADDR", str, "0.0.0.0"), type=str)
+parser.add_argument("--port", "-p", default=getEnv("WORKLOAD_PORT", int, 8000), type=int)
 
 args:dict[str, Any] = vars(parser.parse_args(sys.argv[1:]))
 addr:str = args["addr"]
