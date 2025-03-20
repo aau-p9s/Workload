@@ -8,7 +8,7 @@ from locust.env import Environment
 from locust.log import setup_logging
 from locust.runners import LocalRunner
 import gevent
-from lib.args import addr, port, web_port, web_addr
+import lib.args as args
 
 from generator import UserBehavior
 
@@ -44,11 +44,11 @@ def main(addr:str, port:int) -> None:
     env.host = target_host
     env.runner = LocalRunner(env)
     
-    web_ui:WebUI = env.create_web_ui(host=web_addr, port=web_port)
+    web_ui:WebUI = env.create_web_ui(host=args.web_addr, port=args.web_port)
     
     
     print(f"\nLocust Web UI available at:")
-    print(f" * Local:    http://localhost:{web_port}")
+    print(f" * Local:    http://localhost:{args.web_port}")
     print(f"\nTarget host: {target_host}")
     print("\n")
     
@@ -83,7 +83,7 @@ if __name__ == "__main__":
     print("=" * 70)
 
     try:
-        main(addr, port)
+        main(args.addr, args.port)
     except KeyboardInterrupt:
         logger.info("Shutting down...")
         sys.exit(0)
