@@ -15,6 +15,8 @@ services:
       GENERATOR_API_ADDR: workload-api
       GENERATOR_API_PORT: 8123
       GENERATOR_PORT: 8124
+      GENERATOR_MIN_DELAY: 6
+      GENERATOR_MAX_DELAY: 10
 
     ports:
       - 8124:8124

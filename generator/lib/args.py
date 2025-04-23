@@ -15,6 +15,8 @@ parser.add_argument("--min", "-m", default=getEnv("GENERATOR_MIN", int, 50), typ
 parser.add_argument("--web-addr", "-A", default=getEnv("GENERATOR_ADDR", str, "0.0.0.0"), type=str)
 parser.add_argument("--web-port", "-P", default=getEnv("GENERATOR_PORT", int, 8089), type=int)
 parser.add_argument("--peak-time", "-t", default=getEnv("GENERATOR_PEAK", float, 16.0), type=float)
+parser.add_argument("--min-delay", default=getEnv("GENERATOR_MIN_DELAY", int, 1), type=int)
+parser.add_argument("--max-delay", default=getEnv("GENERATOR_MAX_DELAY", int, 3), type=int)
 
 args:dict[str, Any] = vars(parser.parse_args(sys.argv[1:]))
 addr:str = args["addr"]
@@ -25,5 +27,7 @@ base:int = args["min"]
 web_addr:str = args["web_addr"]
 web_port:int = args["web_port"]
 peak_time:float = args["peak_time"]
+min_delay:int = args["min_delay"]
+max_delay:int = args["max_delay"]
 # small hack to avoid locust dying due to argparse
 sys.argv = sys.argv[:1]
