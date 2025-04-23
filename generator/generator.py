@@ -1,10 +1,10 @@
 from locust import HttpUser, task, between
 from locust.clients import ResponseContextManager
 
-from lib.args import size
+from lib.args import size, min_delay, max_delay
 
 class UserBehavior(HttpUser):
-    wait_time = between(1, 3)
+    wait_time = between(min_delay, max_delay)
     
     def on_start(self):
         pass
