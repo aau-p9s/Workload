@@ -1,6 +1,6 @@
 {
     inputs = {
-        nixpkgs.url = "github:nixos/nixpkgs?ref=nixos-unstable";
+        nixpkgs.url = "nixpkgs/nixos-25.05";
     };
     outputs = { self, nixpkgs }: let
         system = "x86_64-linux";
@@ -11,6 +11,7 @@
                 (python312.withPackages (py: with py; [
                     numpy
                     ipython
+                    locust
                 ]))
             ];
         };

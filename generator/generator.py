@@ -1,3 +1,5 @@
+from time import time
+from typing import Any
 from locust import HttpUser, task, between
 from locust.clients import ResponseContextManager
 
@@ -5,6 +7,7 @@ from lib.args import size, min_delay, max_delay
 
 class UserBehavior(HttpUser):
     wait_time = between(min_delay, max_delay)
+    metrics: dict[int, dict[str, Any]] = {}
     
     def on_start(self):
         pass
@@ -20,6 +23,7 @@ class UserBehavior(HttpUser):
             else:
                 if isinstance(response, ResponseContextManager):
                     response.failure(f"Status code: {response.status_code}")
+        self.log("/sum")
     
     @task(1)
     def matmul_test(self):
@@ -32,6 +36,7 @@ class UserBehavior(HttpUser):
             else:
                 if isinstance(response, ResponseContextManager):
                     response.failure(f"Status code: {response.status_code}")
+        self.log("/mm")
     
     @task(3)
     def home_test(self):
@@ -42,3 +47,7 @@ class UserBehavior(HttpUser):
             else:
                 if isinstance(response, ResponseContextManager):
                     response.failure(f"Unexpected response: {response.text}")
+        self.log("/")
+
+    def log(self, endpoint: str):
+        self.metrics[int(time())] = { "wait_time":self.wait_time(), "endpoint": endpoint }

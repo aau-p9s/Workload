@@ -1,7 +1,9 @@
+from json import dumps
 import sys
 import logging
-from datetime import date, datetime
+from datetime import datetime
 
+from flask import Response
 from locust.web import WebUI
 from lib.get_shape import time_based_load_shape
 from locust.env import Environment
@@ -36,54 +38,60 @@ def adjust_users(environment:Environment) -> None:
         
         gevent.sleep(10)
 
-def main(addr:str, port:int) -> None:
-    target_host:str = f"http://{addr}:{port}"
+print("=" * 70)
+print(" Locust Day-Night Traffic Test")
+print(" Press Ctrl+C to stop the test")
+print("=" * 70)
+
+target_host:str = f"http://{args.addr}:{args.port}"
+
+env:Environment = Environment(user_classes=[UserBehavior])
+
+env.host = target_host
+env.runner = LocalRunner(env)
+
+web_ui:WebUI = env.create_web_ui(host=args.web_addr, port=args.web_port)
+
+print(web_ui.app)
+
+if web_ui.app is not None:
+    @web_ui.app.route("/api/metrics/<int:since>")
+    def get(since: int):
+        result_keys = list(filter(lambda timestamp: timestamp > since, UserBehavior.metrics))
+        return Response(status=200, response=dumps({
+            "metrics": { key: UserBehavior.metrics[key] for key in result_keys }
+        }))
+
+print(f"\nLocust Web UI available at:")
+print(f" * Local:    http://localhost:{args.web_port}")
+print(f"\nTarget host: {target_host}")
+print("\n")
+
+env.runner.start(1, spawn_rate=1)
+logger.info(f"Load test started with 1 user against {target_host}")
+
+adjust_users_greenlet:gevent.Greenlet = gevent.spawn(adjust_users, env)
+
+def stats_printer():
+    while True:
+        if env.runner is None:
+            continue
+        current_time:str = datetime.now().strftime("%H:%M:%S")
+        current_users:int = env.runner.user_count
+        target_users:int = time_based_load_shape()
+        
+        logger.info(f"[{current_time}] Active users: {current_users}, Target: {target_users}")
+        logger.info(f"Requests: {env.runner.stats.total.num_requests}, " 
+                   f"Failures: {env.runner.stats.total.num_failures}")
+        
+        gevent.sleep(60)
+
+stats_greenlet:gevent.Greenlet = gevent.spawn(stats_printer)
     
-    env:Environment = Environment(user_classes=[UserBehavior])
-    
-    env.host = target_host
-    env.runner = LocalRunner(env)
-    
-    web_ui:WebUI = env.create_web_ui(host=args.web_addr, port=args.web_port)
-    
-    
-    print(f"\nLocust Web UI available at:")
-    print(f" * Local:    http://localhost:{args.web_port}")
-    print(f"\nTarget host: {target_host}")
-    print("\n")
-    
-    env.runner.start(1, spawn_rate=1)
-    logger.info(f"Load test started with 1 user against {target_host}")
-    
-    adjust_users_greenlet:gevent.Greenlet = gevent.spawn(adjust_users, env)
-    
-    def stats_printer():
-        while True:
-            if env.runner is None:
-                continue
-            current_time:str = datetime.now().strftime("%H:%M:%S")
-            current_users:int = env.runner.user_count
-            target_users:int = time_based_load_shape()
-            
-            logger.info(f"[{current_time}] Active users: {current_users}, Target: {target_users}")
-            logger.info(f"Requests: {env.runner.stats.total.num_requests}, " 
-                       f"Failures: {env.runner.stats.total.num_failures}")
-            
-            gevent.sleep(60)
-    
-    stats_greenlet:gevent.Greenlet = gevent.spawn(stats_printer)
-    
+try:
     if web_ui.greenlet is not None:
         gevent.joinall([web_ui.greenlet, adjust_users_greenlet, stats_greenlet])
 
-if __name__ == "__main__":
-    print("=" * 70)
-    print(" Locust Day-Night Traffic Test")
-    print(" Press Ctrl+C to stop the test")
-    print("=" * 70)
-
-    try:
-        main(args.addr, args.port)
-    except KeyboardInterrupt:
-        logger.info("Shutting down...")
-        sys.exit(0)
+except KeyboardInterrupt:
+    logger.info("Shutting down...")
+    sys.exit(0)
