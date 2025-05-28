@@ -5,7 +5,8 @@ from datetime import datetime
 
 from flask import Response
 from locust.web import WebUI
-from lib.get_shape import time_based_load_shape
+from lib.time_based_load_shape import time_based_load_shape
+from lib.mapped_load_shape import mapped_load_shape
 from locust.env import Environment
 from locust.log import setup_logging
 from locust.runners import LocalRunner
@@ -22,7 +23,7 @@ def adjust_users(environment:Environment) -> None:
     if environment.runner is None:
         exit(1)
     while True:
-        target_users:int = time_based_load_shape()
+        target_users:int = mapped_load_shape()
         
         current_users:int = environment.runner.user_count
         print(f"{target_users=} {current_users=}")

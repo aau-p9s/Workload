@@ -18,5 +18,8 @@ services:
       GENERATOR_MIN_DELAY: 6
       GENERATOR_MAX_DELAY: 10
 
+    volumes:
+      - "/var/agg_minute.csv:/var/agg_minute.csv"
+
     ports:
       - 8124:8124
