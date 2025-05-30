@@ -56,12 +56,9 @@ web_ui:WebUI = env.create_web_ui(host=args.web_addr, port=args.web_port)
 print(web_ui.app)
 
 if web_ui.app is not None:
-    @web_ui.app.route("/api/metrics/<int:since>")
-    def get(since: int):
-        result_keys = list(filter(lambda timestamp: timestamp > since, UserBehavior.metrics))
-        return Response(status=200, response=dumps({
-            "metrics": { key: UserBehavior.metrics[key] for key in result_keys }
-        }))
+    @web_ui.app.route("/api/metrics")
+    def get():
+        return Response(status=200, response=str(env.runner.user_count // list(env.available_user_classes.values())[0].wait_time()))
 
 print(f"\nLocust Web UI available at:")
 print(f" * Local:    http://localhost:{args.web_port}")
