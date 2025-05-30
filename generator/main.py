@@ -58,7 +58,7 @@ print(web_ui.app)
 if web_ui.app is not None:
     @web_ui.app.route("/api/metrics")
     def get():
-        return Response(status=200, response=str(env.runner.user_count // list(env.available_user_classes.values())[0].wait_time()))
+        return Response(status=200, response=str(int(env.runner.user_count // (sum([args.min_delay, args.max_delay]) / 2))))
 
 print(f"\nLocust Web UI available at:")
 print(f" * Local:    http://localhost:{args.web_port}")
