@@ -8,7 +8,7 @@
     in {
         devShells.${system}.default = pkgs.mkShellNoCC {
             packages = with pkgs; [
-                (python312.withPackages (py: with py; [
+                (python3.withPackages (py: with py; [
                     numpy
                     ipython
                     locust

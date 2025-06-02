@@ -1,12 +1,9 @@
-from json import dumps
 import sys
 import logging
 from datetime import datetime
 
 from flask import Response
 from locust.web import WebUI
-from lib.time_based_load_shape import time_based_load_shape
-from lib.mapped_load_shape import mapped_load_shape
 from locust.env import Environment
 from locust.log import setup_logging
 from locust.runners import LocalRunner
@@ -23,7 +20,7 @@ def adjust_users(environment:Environment) -> None:
     if environment.runner is None:
         exit(1)
     while True:
-        target_users:int = mapped_load_shape()
+        target_users:int = args.load_shape()
         
         current_users:int = environment.runner.user_count
         print(f"{target_users=} {current_users=}")
@@ -56,12 +53,12 @@ web_ui:WebUI = env.create_web_ui(host=args.web_addr, port=args.web_port)
 print(web_ui.app)
 
 if web_ui.app is not None:
-    @web_ui.app.route("/api/metrics/<int:since>")
-    def get(since: int):
-        result_keys = list(filter(lambda timestamp: timestamp > since, UserBehavior.metrics))
-        return Response(status=200, response=dumps({
-            "metrics": { key: UserBehavior.metrics[key] for key in result_keys }
-        }))
+    @web_ui.app.route("/api/metrics")
+    def get():
+        if env.runner is not None:
+            return Response(status=200, response=str(int(env.runner.user_count // (sum([args.min_delay, args.max_delay]) / 2))))
+        else:
+            exit(1)
 
 print(f"\nLocust Web UI available at:")
 print(f" * Local:    http://localhost:{args.web_port}")
@@ -79,7 +76,7 @@ def stats_printer():
             continue
         current_time:str = datetime.now().strftime("%H:%M:%S")
         current_users:int = env.runner.user_count
-        target_users:int = time_based_load_shape()
+        target_users:int = args.load_shape()
         
         logger.info(f"[{current_time}] Active users: {current_users}, Target: {target_users}")
         logger.info(f"Requests: {env.runner.stats.total.num_requests}, " 
