@@ -22,6 +22,6 @@ def mapped_load_shape(min_delay, max_delay) -> Callable:
     
     def load_shape() -> int:
         now = datetime.now().replace(second=0, microsecond=0)
-        return now_mapping[now] * user_scalar
+        return now_mapping[now] // user_scalar
 
     return load_shape

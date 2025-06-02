@@ -1,4 +1,3 @@
-from json import dumps
 import sys
 import logging
 from datetime import datetime
