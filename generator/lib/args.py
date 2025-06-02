@@ -1,7 +1,10 @@
 import sys
 import os
 import argparse
-from typing import Any
+from typing import Any, Callable
+
+from lib.mapped_load_shape import mapped_load_shape
+from lib.time_based_load_shape import time_based_load_shape
 
 getEnv = lambda arg, dtype, default: dtype(os.environ[arg]) if arg in os.environ else default
 
@@ -17,6 +20,7 @@ parser.add_argument("--web-port", "-P", default=getEnv("GENERATOR_PORT", int, 80
 parser.add_argument("--peak-time", "-t", default=getEnv("GENERATOR_PEAK", float, 16.0), type=float)
 parser.add_argument("--min-delay", default=getEnv("GENERATOR_MIN_DELAY", int, 1), type=int)
 parser.add_argument("--max-delay", default=getEnv("GENERATOR_MAX_DELAY", int, 3), type=int)
+parser.add_argument("--shape", default=getEnv("GENERATOR_SHAPE", str, "mapped"), type=str) # mapped or sinusodal
 
 args:dict[str, Any] = vars(parser.parse_args(sys.argv[1:]))
 addr:str = args["addr"]
@@ -29,5 +33,6 @@ web_port:int = args["web_port"]
 peak_time:float = args["peak_time"]
 min_delay:int = args["min_delay"]
 max_delay:int = args["max_delay"]
+load_shape: Callable = mapped_load_shape(min_delay, max_delay) if args["shape"] == "mapped" else time_based_load_shape(base, peak, peak_time)
 # small hack to avoid locust dying due to argparse
 sys.argv = sys.argv[:1]
