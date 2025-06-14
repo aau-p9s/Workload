@@ -5,6 +5,7 @@ from typing import Any, Callable
 
 from lib.mapped_load_shape import mapped_load_shape
 from lib.time_based_load_shape import time_based_load_shape
+from lib.varying_mapped_load_shape import varying_mapped_load_shape
 
 getEnv = lambda arg, dtype, default: dtype(os.environ[arg]) if arg in os.environ else default
 
@@ -33,6 +34,12 @@ web_port:int = args["web_port"]
 peak_time:float = args["peak_time"]
 min_delay:int = args["min_delay"]
 max_delay:int = args["max_delay"]
-load_shape: Callable = mapped_load_shape(min_delay, max_delay) if args["shape"] == "mapped" else time_based_load_shape(base, peak, peak_time)
+match args["shape"]:
+    case "mapped":
+        load_shape = mapped_load_shape(min_delay, max_delay)
+    case "varying":
+        load_shape = varying_mapped_load_shape(min_delay, max_delay)
+    case _:
+        load_shape = time_based_load_shape(base, peak, peak_time)
 # small hack to avoid locust dying due to argparse
 sys.argv = sys.argv[:1]

@@ -15,8 +15,10 @@ services:
       GENERATOR_API_ADDR: workload-api
       GENERATOR_API_PORT: 8123
       GENERATOR_PORT: 8124
-      GENERATOR_MIN_DELAY: 6
-      GENERATOR_MAX_DELAY: 10
+      GENERATOR_X: 10
+      GENERATOR_Y: 10
+      GENERATOR_MIN: 2000
+      GENERATOR_MAX: 50
 
     volumes:
       - "/var/agg_minute.csv:/var/agg_minute.csv"

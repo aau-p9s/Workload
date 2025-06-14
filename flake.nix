@@ -12,6 +12,7 @@
                     numpy
                     ipython
                     locust
+                    matplotlib
                 ]))
             ];
         };
