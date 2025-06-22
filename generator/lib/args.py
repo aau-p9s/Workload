@@ -6,6 +6,7 @@ from typing import Any, Callable
 from lib.mapped_load_shape import mapped_load_shape
 from lib.time_based_load_shape import time_based_load_shape
 from lib.varying_mapped_load_shape import varying_mapped_load_shape
+from lib.reverse_mapped_load_shape import reverse_mapped_load_shape
 
 getEnv = lambda arg, dtype, default: dtype(os.environ[arg]) if arg in os.environ else default
 
@@ -39,6 +40,8 @@ match args["shape"]:
         load_shape = mapped_load_shape(min_delay, max_delay)
     case "varying":
         load_shape = varying_mapped_load_shape(min_delay, max_delay)
+    case "reverse":
+        load_shape = reverse_mapped_load_shape(min_delay, max_delay)
     case _:
         load_shape = time_based_load_shape(base, peak, peak_time)
 # small hack to avoid locust dying due to argparse
